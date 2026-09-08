@@ -1,19 +1,19 @@
 # 云医院门诊闭环（Java + MySQL + Vue）
 
-一个严格使用 6 张核心表的门诊业务 Demo，覆盖：患者建档、挂号、医生接诊、病历、处方、收费、发药和就诊结束。
+一个带管理员端与患者端的门诊业务 Demo，覆盖：患者建档、挂号、医生接诊、病历、处方、收费订单、患者缴费、发药通知和就诊结束。
 
 ## 项目结构
 
 ```text
 cloud-hospital/
-├── hospital-server/    Spring Boot 3 + Spring Data JPA（Java 17）
+├── hospital-server/    Spring Boot 3 + MyBatis（Java 17）
 ├── hospital-web/       Vue 3 + Vite + Element Plus
 └── sql/                MySQL 8 建表与演示数据
 ```
 
 ## 运行
 
-1. 启动本地 MySQL 8（首次启动会自动执行 `sql/schema.sql` 和 `sql/seed.sql`）：
+1. 启动本地 MySQL 8（首次启动会自动执行唯一的 `sql/init.sql`）：
 
    ```powershell
    docker compose up -d mysql
@@ -46,11 +46,13 @@ cloud-hospital/
 - 身份证号唯一；同患者、同医生、同日不得重复创建未取消挂号。
 - 医生只能从 `WAITING` 状态开始接诊，取消也只允许 `WAITING`。
 - 病历、处方只能在挂号 `IN_PROGRESS` 时写入；处方总金额始终由服务端用 `BigDecimal` 计算。
-- 付款仅允许 `UNPAID → PAID`，发药仅允许 `PAID → DISPENSED`，结束就诊前不能存在未完成处方。
+- 医生提交处方后自动结束本次接诊，并自动生成待支付收费订单；患者仅能支付本人订单，付款仅允许 `UNPAID → PAID`，发药仅允许 `PAID → DISPENSED`，患者确认取药仅允许 `DISPENSED → PICKED_UP`。
+- 管理员端只查看待患者支付的订单；患者在本人端完成模拟支付，药房发药后向患者端发送取药通知。
+- 对尚未注册患者端账号的患者，管理员可人工确认院内现金收款；后端会拒绝对已注册患者执行此操作。
 - 所有状态变更采用带旧状态条件的更新（CAS 风格），并发重复点击只有一个请求能成功。
 
 ## 主要接口
 
-接口前缀是 `/api/v1`。完整核心接口包括：`/patients`、`/doctors`、`/registrations`、`/registrations/{id}/medical-record`、`/registrations/{id}/prescriptions`、`/prescriptions/{id}/pay` 与 `/prescriptions/{id}/dispense`。
+接口前缀是 `/api/v1`。认证接口为 `/auth/login` 与 `/auth/register`；患者自助挂号和支付接口位于 `/patient-portal`，管理员接口包括 `/patients`、`/doctors`、`/registrations`、`/registrations/{id}/medical-record`、`/registrations/{id}/prescriptions`、`/prescriptions/{id}/manual-pay` 与 `/prescriptions/{id}/dispense`。
 
-> 当前版本为教学演示，未接入登录鉴权；生产环境应补 Spring Security/JWT、操作者审计、权限校验、幂等键和支付回调验签。
+> 当前版本的支付为教学模拟，不对接第三方支付；生产环境仍应补 Spring Security/JWT、操作者审计、支付幂等键和支付回调验签。

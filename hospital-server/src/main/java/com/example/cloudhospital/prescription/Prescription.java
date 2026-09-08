@@ -15,5 +15,6 @@ public class Prescription {
     public LocalDateTime prescribedAt;
     public LocalDateTime paidAt;
     public LocalDateTime dispensedAt;
+    public LocalDateTime pickedUpAt;
     public String remark;
 }

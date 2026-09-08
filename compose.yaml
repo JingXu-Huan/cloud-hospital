@@ -11,8 +11,7 @@ services:
       - "3306:3306"
     volumes:
       - cloud-hospital-mysql-data:/var/lib/mysql
-      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ./sql/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
       interval: 5s

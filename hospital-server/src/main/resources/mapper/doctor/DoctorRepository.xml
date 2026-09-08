@@ -3,8 +3,10 @@
 <mapper namespace="com.example.cloudhospital.doctor.DoctorRepository">
   <sql id="columns">id, doctor_no, login_name, password_hash, real_name, department_name, title, enabled, created_at</sql>
   <select id="findById" resultType="com.example.cloudhospital.doctor.Doctor">SELECT <include refid="columns"/> FROM doctor WHERE id = #{id}</select>
+  <select id="findByLoginName" resultType="com.example.cloudhospital.doctor.Doctor">SELECT <include refid="columns"/> FROM doctor WHERE login_name = #{loginName}</select>
   <select id="findAll" resultType="com.example.cloudhospital.doctor.Doctor">SELECT <include refid="columns"/> FROM doctor ORDER BY department_name, real_name</select>
   <select id="findByEnabledOrderByDepartmentNameAscRealNameAsc" resultType="com.example.cloudhospital.doctor.Doctor">SELECT <include refid="columns"/> FROM doctor WHERE enabled = #{enabled} ORDER BY department_name, real_name</select>
   <select id="findByDepartmentNameAndEnabledOrderByRealNameAsc" resultType="com.example.cloudhospital.doctor.Doctor">SELECT <include refid="columns"/> FROM doctor WHERE department_name = #{departmentName} AND enabled = #{enabled} ORDER BY real_name</select>
   <select id="findByDepartmentNameOrderByRealNameAsc" resultType="com.example.cloudhospital.doctor.Doctor">SELECT <include refid="columns"/> FROM doctor WHERE department_name = #{departmentName} ORDER BY real_name</select>
+  <insert id="save" parameterType="com.example.cloudhospital.doctor.Doctor" useGeneratedKeys="true" keyProperty="id">INSERT INTO doctor (doctor_no, login_name, password_hash, real_name, department_name, title, enabled) VALUES (#{doctorNo}, #{loginName}, #{passwordHash}, #{realName}, #{departmentName}, #{title}, #{enabled})</insert>
 </mapper>

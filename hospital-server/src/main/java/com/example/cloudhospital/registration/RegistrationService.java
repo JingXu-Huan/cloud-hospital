@@ -24,8 +24,7 @@ public class RegistrationService {
     @Transactional public void start(Long id) { if(registrations.startIfWaiting(id, LocalDateTime.now(),RegistrationStatus.WAITING,RegistrationStatus.IN_PROGRESS) != 1) throw new BizException(41001,"仅待接诊挂号可开始接诊（可能已被其他请求处理）"); }
     @Transactional public void cancel(Long id, String reason) { if(registrations.cancelIfWaiting(id,reason,RegistrationStatus.WAITING,RegistrationStatus.CANCELLED) != 1) throw new BizException(41001,"仅待接诊挂号可取消"); }
     @Transactional public void complete(Long id) {
-        Registration r=get(id); List<Prescription> all=prescriptions.findByRegistrationId(id);
-        if(all.stream().anyMatch(p -> p.status != PrescriptionStatus.DISPENSED && p.status != PrescriptionStatus.CANCELLED)) throw new BizException(41001,"仍有未完成的处方，不能结束就诊");
+        get(id);
         if(registrations.completeIfInProgress(id,LocalDateTime.now(),RegistrationStatus.IN_PROGRESS,RegistrationStatus.COMPLETED) != 1) throw new BizException(41001,"仅接诊中挂号可完成");
     }
     public Registration get(Long id) { return registrations.findById(id).orElseThrow(() -> new BizException(41001,"挂号不存在")); }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.cloudhospital.prescription.PrescriptionRepository">
-  <sql id="columns">id, prescription_no, registration_id, patient_id, doctor_id, status, total_amount, payment_method, prescribed_at, paid_at, dispensed_at, remark</sql>
+  <sql id="columns">id, prescription_no, registration_id, patient_id, doctor_id, status, total_amount, payment_method, prescribed_at, paid_at, dispensed_at, picked_up_at, remark</sql>
   <select id="findById" resultType="com.example.cloudhospital.prescription.Prescription">SELECT <include refid="columns"/> FROM prescription WHERE id = #{id}</select>
   <select id="findAll" resultType="com.example.cloudhospital.prescription.Prescription">SELECT <include refid="columns"/> FROM prescription ORDER BY prescribed_at</select>
   <insert id="save" parameterType="com.example.cloudhospital.prescription.Prescription" useGeneratedKeys="true" keyProperty="id">INSERT INTO prescription (prescription_no, registration_id, patient_id, doctor_id, status, total_amount, prescribed_at, remark) VALUES (#{prescriptionNo}, #{registrationId}, #{patientId}, #{doctorId}, #{status}, #{totalAmount}, #{prescribedAt}, #{remark})</insert>
@@ -9,5 +9,6 @@
   <select id="findByRegistrationId" resultType="com.example.cloudhospital.prescription.Prescription">SELECT <include refid="columns"/> FROM prescription WHERE registration_id = #{registrationId}</select>
   <update id="payIfUnpaid">UPDATE prescription SET status = #{nextStatus}, payment_method = #{method}, paid_at = #{now} WHERE id = #{id} AND status = #{expectedStatus}</update>
   <update id="dispenseIfPaid">UPDATE prescription SET status = #{nextStatus}, dispensed_at = #{now} WHERE id = #{id} AND status = #{expectedStatus}</update>
+  <update id="pickUpIfDispensed">UPDATE prescription SET status = #{nextStatus}, picked_up_at = #{now} WHERE id = #{id} AND status = #{expectedStatus}</update>
   <update id="cancelIfUnpaid">UPDATE prescription SET status = #{nextStatus} WHERE id = #{id} AND status = #{expectedStatus}</update>
 </mapper>

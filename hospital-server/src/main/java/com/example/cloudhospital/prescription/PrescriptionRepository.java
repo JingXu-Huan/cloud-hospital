@@ -12,5 +12,6 @@ public interface PrescriptionRepository {
     List<Prescription> findByRegistrationId(Long registrationId);
     int payIfUnpaid(@Param("id") Long id, @Param("method") String method, @Param("now") LocalDateTime now, @Param("expectedStatus") PrescriptionStatus expectedStatus, @Param("nextStatus") PrescriptionStatus nextStatus);
     int dispenseIfPaid(@Param("id") Long id, @Param("now") LocalDateTime now, @Param("expectedStatus") PrescriptionStatus expectedStatus, @Param("nextStatus") PrescriptionStatus nextStatus);
+    int pickUpIfDispensed(@Param("id") Long id, @Param("now") LocalDateTime now, @Param("expectedStatus") PrescriptionStatus expectedStatus, @Param("nextStatus") PrescriptionStatus nextStatus);
     int cancelIfUnpaid(@Param("id") Long id, @Param("expectedStatus") PrescriptionStatus expectedStatus, @Param("nextStatus") PrescriptionStatus nextStatus);
 }

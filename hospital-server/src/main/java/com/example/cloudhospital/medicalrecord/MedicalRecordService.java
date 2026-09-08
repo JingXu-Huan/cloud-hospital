@@ -18,5 +18,5 @@ public class MedicalRecordService {
         records.save(m);
         return m;
     }
-    public MedicalRecord get(Long registrationId) { return records.findByRegistrationId(registrationId).orElseThrow(() -> new BizException(42002,"病历不存在")); }
+    public MedicalRecord get(Long registrationId) { return records.findByRegistrationId(registrationId).orElse(null); }
 }

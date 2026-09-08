@@ -15,7 +15,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> validation(MethodArgumentNotValidException e) {
         FieldError error = e.getBindingResult().getFieldError();
-        return ResponseEntity.badRequest().body(ApiResponse.fail(40000, error == null ? "参数校验失败" : error.getField() + " " + error.getDefaultMessage()));
+        if (error == null) return ResponseEntity.badRequest().body(ApiResponse.fail(40000, "参数校验失败"));
+        String field = error.getField();
+        String message = field.equals("items") ? "请至少添加一种药品" : error.getDefaultMessage();
+        return ResponseEntity.badRequest().body(ApiResponse.fail(40000, message));
     }
     @ExceptionHandler({ConstraintViolationException.class, DataIntegrityViolationException.class})
     public ResponseEntity<ApiResponse<Void>> conflict(Exception e) { return ResponseEntity.badRequest().body(ApiResponse.fail(40000, "数据不合法或已存在")); }
