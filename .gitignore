@@ -1,0 +1,7 @@
+.idea/
+*.iml
+hospital-server/target/
+hospital-web/node_modules/
+hospital-web/dist/
+.env.local
+*.log
