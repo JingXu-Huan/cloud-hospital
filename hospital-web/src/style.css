@@ -1,0 +1,11 @@
+* { box-sizing: border-box; }
+body { margin: 0; color: #24324a; background: #f4f7fb; font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif; }
+.page { padding: 4px 2px; }
+.toolbar { display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+.toolbar .el-input { width: 220px; }
+.grid { display:grid; grid-template-columns: minmax(280px,.8fr) minmax(380px,1.2fr); gap:16px; }
+.hint { font-size:13px; color:#7a8599; line-height:1.7; }
+.selected-row { background:#edf7ff; }
+.amount { font-weight:700; color:#e06a1e; }
+.patient-name { font-weight:600; }
+@media(max-width:900px){.grid{grid-template-columns:1fr}.app-main{padding:16px!important}}
