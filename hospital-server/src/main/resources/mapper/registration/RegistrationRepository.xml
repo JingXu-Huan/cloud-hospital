@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.cloudhospital.registration.RegistrationRepository">
+  <sql id="columns">id, visit_no, patient_id, doctor_id, visit_date, registration_fee, status, registered_at, consultation_started_at, consultation_ended_at, cancel_reason</sql>
+  <select id="findById" resultType="com.example.cloudhospital.registration.Registration">SELECT <include refid="columns"/> FROM registration WHERE id = #{id}</select>
+  <insert id="save" parameterType="com.example.cloudhospital.registration.Registration" useGeneratedKeys="true" keyProperty="id">INSERT INTO registration (visit_no, patient_id, doctor_id, visit_date, registration_fee, status, registered_at) VALUES (#{visitNo}, #{patientId}, #{doctorId}, #{visitDate}, #{registrationFee}, #{status}, #{registeredAt})</insert>
+  <select id="existsByPatientIdAndDoctorIdAndVisitDateAndStatusIn" resultType="boolean">SELECT EXISTS(SELECT 1 FROM registration WHERE patient_id = #{patientId} AND doctor_id = #{doctorId} AND visit_date = #{visitDate} AND status IN <foreach collection="statuses" item="status" open="(" separator="," close=")">#{status}</foreach>)</select>
+  <select id="findByDoctorIdAndVisitDateAndStatusInOrderByRegisteredAtAsc" resultType="com.example.cloudhospital.registration.Registration">SELECT <include refid="columns"/> FROM registration WHERE doctor_id = #{doctorId} AND visit_date = #{visitDate} AND status IN <foreach collection="statuses" item="status" open="(" separator="," close=")">#{status}</foreach> ORDER BY registered_at</select>
+  <update id="startIfWaiting">UPDATE registration SET status = #{nextStatus}, consultation_started_at = #{now} WHERE id = #{id} AND status = #{expectedStatus}</update>
+  <update id="cancelIfWaiting">UPDATE registration SET status = #{nextStatus}, cancel_reason = #{reason} WHERE id = #{id} AND status = #{expectedStatus}</update>
+  <update id="completeIfInProgress">UPDATE registration SET status = #{nextStatus}, consultation_ended_at = #{now} WHERE id = #{id} AND status = #{expectedStatus}</update>
+</mapper>

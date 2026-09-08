@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.cloudhospital.medicalrecord.MedicalRecordRepository">
+  <sql id="columns">id, registration_id, patient_id, doctor_id, chief_complaint, present_illness, past_history, allergy_history, physical_exam, diagnosis, advice, created_at, updated_at</sql>
+  <select id="findByRegistrationId" resultType="com.example.cloudhospital.medicalrecord.MedicalRecord">SELECT <include refid="columns"/> FROM medical_record WHERE registration_id = #{registrationId}</select>
+  <insert id="save" parameterType="com.example.cloudhospital.medicalrecord.MedicalRecord" useGeneratedKeys="true" keyProperty="id">INSERT INTO medical_record (registration_id, patient_id, doctor_id, chief_complaint, present_illness, past_history, allergy_history, physical_exam, diagnosis, advice, created_at, updated_at) VALUES (#{registrationId}, #{patientId}, #{doctorId}, #{chiefComplaint}, #{presentIllness}, #{pastHistory}, #{allergyHistory}, #{physicalExam}, #{diagnosis}, #{advice}, #{createdAt}, #{updatedAt}) ON DUPLICATE KEY UPDATE chief_complaint = VALUES(chief_complaint), present_illness = VALUES(present_illness), past_history = VALUES(past_history), allergy_history = VALUES(allergy_history), physical_exam = VALUES(physical_exam), diagnosis = VALUES(diagnosis), advice = VALUES(advice), updated_at = VALUES(updated_at)</insert>
+</mapper>

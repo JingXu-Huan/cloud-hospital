@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.cloudhospital.doctor.DoctorRepository">
+  <sql id="columns">id, doctor_no, login_name, password_hash, real_name, department_name, title, enabled, created_at</sql>
+  <select id="findById" resultType="com.example.cloudhospital.doctor.Doctor">SELECT <include refid="columns"/> FROM doctor WHERE id = #{id}</select>
+  <select id="findAll" resultType="com.example.cloudhospital.doctor.Doctor">SELECT <include refid="columns"/> FROM doctor ORDER BY department_name, real_name</select>
+  <select id="findByEnabledOrderByDepartmentNameAscRealNameAsc" resultType="com.example.cloudhospital.doctor.Doctor">SELECT <include refid="columns"/> FROM doctor WHERE enabled = #{enabled} ORDER BY department_name, real_name</select>
+  <select id="findByDepartmentNameAndEnabledOrderByRealNameAsc" resultType="com.example.cloudhospital.doctor.Doctor">SELECT <include refid="columns"/> FROM doctor WHERE department_name = #{departmentName} AND enabled = #{enabled} ORDER BY real_name</select>
+  <select id="findByDepartmentNameOrderByRealNameAsc" resultType="com.example.cloudhospital.doctor.Doctor">SELECT <include refid="columns"/> FROM doctor WHERE department_name = #{departmentName} ORDER BY real_name</select>
+</mapper>
