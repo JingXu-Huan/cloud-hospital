@@ -2,13 +2,16 @@
 
 一个带管理员端与患者端的门诊业务 Demo，覆盖：患者建档、挂号、医生接诊、病历、处方、收费订单、患者缴费、发药通知和就诊结束。
 
+项目资料已归档到 [docs](./docs/README.md)：[项目概览](./docs/项目概览.md)、[业务流程](./docs/业务流程.md)、[数据表关系](./docs/数据表关系.md)、[环境搭建指南](./docs/环境搭建指南.md)。
+
 ## 项目结构
 
 ```text
 cloud-hospital/
 ├── hospital-server/    Spring Boot 3 + MyBatis（Java 17）
 ├── hospital-web/       Vue 3 + Vite + Element Plus
-└── sql/                MySQL 8 建表与演示数据
+├── sql/                MySQL 8 建表与演示数据
+└── docs/               项目、业务、表关系与环境文档
 ```
 
 ## 运行
