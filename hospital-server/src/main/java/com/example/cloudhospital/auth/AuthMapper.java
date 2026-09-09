@@ -11,7 +11,7 @@ public interface AuthMapper {
     boolean existsByUsername(@Param("username") String username);
     boolean existsByPatientId(@Param("patientId") Long patientId);
     int insertPatientAccount(@Param("username") String username, @Param("password") String password, @Param("patientId") Long patientId, @Param("token") String token);
-    int insertDoctorAccount(@Param("username") String username);
+    int insertDoctorAccount(@Param("username") String username, @Param("password") String password, @Param("token") String token);
     Long findIdByUsername(@Param("username") String username);
     List<AuthService.Session> findSessionsByToken(@Param("token") String token);
 }

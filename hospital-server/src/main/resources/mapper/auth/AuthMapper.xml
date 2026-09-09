@@ -7,7 +7,7 @@
   <select id="existsByUsername" resultType="boolean">SELECT EXISTS(SELECT 1 FROM user_account WHERE username = #{username})</select>
   <select id="existsByPatientId" resultType="boolean">SELECT EXISTS(SELECT 1 FROM user_account WHERE patient_id = #{patientId})</select>
   <insert id="insertPatientAccount">INSERT INTO user_account (username, password_hash, role, patient_id, auth_token) VALUES (#{username}, SHA2(#{password}, 256), 'PATIENT', #{patientId}, #{token})</insert>
-  <insert id="insertDoctorAccount">INSERT INTO user_account (username, password_hash, role) VALUES (#{username}, SHA2('123456', 256), 'DOCTOR')</insert>
+  <insert id="insertDoctorAccount">INSERT INTO user_account (username, password_hash, role, auth_token) VALUES (#{username}, SHA2(#{password}, 256), 'DOCTOR', #{token})</insert>
   <select id="findIdByUsername" resultType="long">SELECT id FROM user_account WHERE username = #{username}</select>
   <select id="findSessionsByToken" resultType="com.example.cloudhospital.auth.AuthService$Session">SELECT <include refid="sessionColumns"/>, a.auth_token AS token FROM user_account a LEFT JOIN doctor d ON a.role = 'DOCTOR' AND d.login_name = a.username WHERE a.auth_token = #{token} AND (a.role &lt;&gt; 'DOCTOR' OR d.enabled = b'1')</select>
 </mapper>

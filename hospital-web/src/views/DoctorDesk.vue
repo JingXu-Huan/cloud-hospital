@@ -21,7 +21,8 @@ const rx = ref({ remark: '', items: [{ drugCode: 'D001', drugName: '对乙酰氨
 
 const total = computed(() => rx.value.items.reduce((sum, item) => sum + (Number(item.unitPrice || 0) * Number(item.quantity || 0)), 0).toFixed(2))
 const pagedQueue = computed(() => queue.value.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize))
-const doctorMode = computed(() => props.doctorMode)
+// 医生账户只处理自身的待诊队列；会话角色作为兜底，避免属性传递异常时退回管理员模式。
+const doctorMode = computed(() => props.doctorMode || props.session?.role === 'DOCTOR')
 const statusLabel = status => ({ WAITING: '待接诊', IN_PROGRESS: '接诊中', COMPLETED: '已完成', CANCELLED: '已取消' }[status] || status)
 const loadDoctors = async () => {
   doctors.value = await http.get('/doctors', { params: { enabled: true } })
