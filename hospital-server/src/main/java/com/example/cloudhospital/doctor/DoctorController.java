@@ -3,6 +3,7 @@ package com.example.cloudhospital.doctor;
 import com.example.cloudhospital.common.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.*;
@@ -10,15 +11,17 @@ import java.util.*;
 @RestController @RequestMapping("/api/v1/doctors")
 public class DoctorController {
     private final DoctorRepository doctors;
-    public DoctorController(DoctorRepository doctors) { this.doctors = doctors; }
-    @PostMapping public ApiResponse<Doctor> create(@Valid @RequestBody CreateRequest req) {
-        if (doctors.findByLoginName(req.loginName()).isPresent()) throw new BizException(40003, "登录名已存在");
+    private final com.example.cloudhospital.auth.AuthService auth;
+    public DoctorController(DoctorRepository doctors, com.example.cloudhospital.auth.AuthService auth) { this.doctors = doctors; this.auth = auth; }
+    @PostMapping @Transactional public ApiResponse<Doctor> create(@Valid @RequestBody CreateRequest req) {
+        if (doctors.findByLoginName(req.loginName()).isPresent() || auth.usernameExists(req.loginName())) throw new BizException(40003, "登录名已存在");
         Doctor doctor = new Doctor();
         doctor.doctorNo = "D" + LocalDate.now().toString().replace("-", "") + String.format("%06d", new Random().nextInt(1_000_000));
         doctor.loginName = req.loginName();
         doctor.passwordHash = "{noop}123456";
         doctor.realName = req.realName(); doctor.departmentName = req.departmentName(); doctor.title = req.title(); doctor.enabled = true;
         doctors.save(doctor);
+        auth.provisionDoctorAccount(doctor.loginName);
         return ApiResponse.ok(doctor);
     }
     @GetMapping public ApiResponse<List<Doctor>> list(@RequestParam(required=false) String departmentName, @RequestParam(required=false) Boolean enabled) {

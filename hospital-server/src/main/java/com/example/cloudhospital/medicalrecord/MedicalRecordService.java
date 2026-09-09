@@ -19,4 +19,6 @@ public class MedicalRecordService {
         return m;
     }
     public MedicalRecord get(Long registrationId) { return records.findByRegistrationId(registrationId).orElse(null); }
+    @Transactional public MedicalRecord saveForDoctor(Long registrationId, Long doctorId, MedicalRecordController.SaveRequest req) { registrations.getForDoctor(registrationId,doctorId); return save(registrationId,req); }
+    public MedicalRecord getForDoctor(Long registrationId, Long doctorId) { registrations.getForDoctor(registrationId,doctorId); return get(registrationId); }
 }

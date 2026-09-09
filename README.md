@@ -48,11 +48,12 @@ cloud-hospital/
 - 病历、处方只能在挂号 `IN_PROGRESS` 时写入；处方总金额始终由服务端用 `BigDecimal` 计算。
 - 医生提交处方后自动结束本次接诊，并自动生成待支付收费订单；患者仅能支付本人订单，付款仅允许 `UNPAID → PAID`，发药仅允许 `PAID → DISPENSED`，患者确认取药仅允许 `DISPENSED → PICKED_UP`。
 - 管理员端只查看待患者支付的订单；患者在本人端完成模拟支付，药房发药后向患者端发送取药通知。
+- 患者可在接诊前自助取消本人的挂号；可查看本人处方中的药品明细，并可将取药通知一键标记为已读。
 - 对尚未注册患者端账号的患者，管理员可人工确认院内现金收款；后端会拒绝对已注册患者执行此操作。
 - 所有状态变更采用带旧状态条件的更新（CAS 风格），并发重复点击只有一个请求能成功。
 
 ## 主要接口
 
-接口前缀是 `/api/v1`。认证接口为 `/auth/login` 与 `/auth/register`；患者自助挂号和支付接口位于 `/patient-portal`，管理员接口包括 `/patients`、`/doctors`、`/registrations`、`/registrations/{id}/medical-record`、`/registrations/{id}/prescriptions`、`/prescriptions/{id}/manual-pay` 与 `/prescriptions/{id}/dispense`。
+接口前缀是 `/api/v1`。认证接口为 `/auth/login` 与 `/auth/register`；患者自助服务接口位于 `/patient-portal`，其中包括自助挂号、取消挂号、支付、查看本人处方明细和通知已读；管理员接口包括 `/patients`、`/doctors`、`/registrations`、`/registrations/{id}/medical-record`、`/registrations/{id}/prescriptions`、`/prescriptions/{id}/manual-pay` 与 `/prescriptions/{id}/dispense`。
 
 > 当前版本的支付为教学模拟，不对接第三方支付；生产环境仍应补 Spring Security/JWT、操作者审计、支付幂等键和支付回调验签。

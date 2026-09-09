@@ -26,4 +26,5 @@ INSERT INTO user_account (username,password_hash,role) VALUES ('admin',SHA2('adm
 INSERT INTO doctor (doctor_no,login_name,password_hash,real_name,department_name,title,enabled) VALUES
 ('D001','zhangwei','{noop}123456',CONVERT(0xE5BCA0E4BC9F USING utf8mb4),CONVERT(0xE58685E7A791 USING utf8mb4),CONVERT(0xE4B8BBE6B2BBE58CBBE5B888 USING utf8mb4),1),
 ('D002','lihua','{noop}123456',CONVERT(0xE69D8EE58D8E USING utf8mb4),CONVERT(0xE5A496E7A791 USING utf8mb4),CONVERT(0xE589AFE4B8BBE4BBBBE58CBBE5B888 USING utf8mb4),1);
+INSERT INTO user_account (username,password_hash,role) VALUES ('zhangwei',SHA2('123456',256),'DOCTOR'),('lihua',SHA2('123456',256),'DOCTOR');
 INSERT INTO registration (visit_no,patient_id,doctor_id,visit_date,registration_fee,status,registered_at) VALUES ('V202609080001',1,1,CURDATE(),8.00,'WAITING',NOW());

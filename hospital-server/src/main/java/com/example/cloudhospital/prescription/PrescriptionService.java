@@ -4,15 +4,14 @@ import com.example.cloudhospital.common.BizException;
 import com.example.cloudhospital.registration.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.jdbc.core.JdbcTemplate;
 import java.math.*;
 import java.time.*;
 import java.util.*;
 
 @Service
 public class PrescriptionService {
-    private final PrescriptionRepository prescriptions; private final PrescriptionItemRepository items; private final RegistrationService registrations; private final JdbcTemplate jdbc;
-    public PrescriptionService(PrescriptionRepository prescriptions, PrescriptionItemRepository items, RegistrationService registrations, JdbcTemplate jdbc) { this.prescriptions=prescriptions; this.items=items; this.registrations=registrations; this.jdbc=jdbc; }
+    private final PrescriptionRepository prescriptions; private final PrescriptionItemRepository items; private final RegistrationService registrations; private final PrescriptionNotificationMapper notificationMapper;
+    public PrescriptionService(PrescriptionRepository prescriptions, PrescriptionItemRepository items, RegistrationService registrations, PrescriptionNotificationMapper notificationMapper) { this.prescriptions=prescriptions; this.items=items; this.registrations=registrations; this.notificationMapper=notificationMapper; }
     @Transactional public Prescription create(Long registrationId, PrescriptionController.CreateRequest req) {
         Registration r=registrations.get(registrationId);
         if(r.status != RegistrationStatus.IN_PROGRESS) throw new BizException(43002,"仅接诊中挂号可以开具处方");
@@ -29,8 +28,9 @@ public class PrescriptionService {
         registrations.complete(registrationId);
         return p;
     }
+    @Transactional public Prescription createForDoctor(Long registrationId, Long doctorId, PrescriptionController.CreateRequest req) { registrations.getForDoctor(registrationId,doctorId); return create(registrationId,req); }
     public Prescription get(Long id) { return prescriptions.findById(id).orElseThrow(() -> new BizException(43002,"处方不存在")); }
-    public boolean hasPatientAccount(Long patientId) { Integer count=jdbc.queryForObject("SELECT COUNT(*) FROM user_account WHERE patient_id=? AND role='PATIENT'",Integer.class,patientId); return count!=null && count>0; }
+    public boolean hasPatientAccount(Long patientId) { return notificationMapper.countPatientAccounts(patientId)>0; }
     public List<Prescription> list(PrescriptionStatus status) { return status==null ? prescriptions.findAll() : prescriptions.findByStatusOrderByPrescribedAtAsc(status); }
     public List<PrescriptionItem> items(Long id) { get(id); return items.findByPrescriptionId(id); }
     @Transactional public void pay(Long id,String method) { if(method==null || method.isBlank()) throw new BizException(40000,"请选择支付方式"); if(prescriptions.payIfUnpaid(id,method,LocalDateTime.now(),PrescriptionStatus.UNPAID,PrescriptionStatus.PAID)!=1) throw new BizException(43003,"处方非待缴费状态，不能重复缴费"); }
@@ -42,11 +42,11 @@ public class PrescriptionService {
     @Transactional public void dispense(Long id) {
         if(prescriptions.dispenseIfPaid(id,LocalDateTime.now(),PrescriptionStatus.PAID,PrescriptionStatus.DISPENSED)!=1) throw new BizException(43004,"仅已缴费处方可以发药");
         Prescription p=get(id);
-        jdbc.update("INSERT INTO patient_notification (patient_id,prescription_id,type,title,content) VALUES (?,?,?, ?, ?)",p.patientId,id,"PICKUP_READY","您的药品已配好","处方 "+p.prescriptionNo+" 已完成发药，请前往药房窗口取药。");
+        notificationMapper.insertPickupReadyNotification(p.patientId,id,p.prescriptionNo);
     }
     @Transactional public void pickUp(Long id) {
         if(prescriptions.pickUpIfDispensed(id,LocalDateTime.now(),PrescriptionStatus.DISPENSED,PrescriptionStatus.PICKED_UP)!=1) throw new BizException(43006,"仅已发药处方可以确认取药");
-        jdbc.update("UPDATE patient_notification SET read_at=COALESCE(read_at,NOW()) WHERE prescription_id=?",id);
+        notificationMapper.markNotificationsReadByPrescriptionId(id);
     }
     @Transactional public void cancel(Long id) { if(prescriptions.cancelIfUnpaid(id,PrescriptionStatus.UNPAID,PrescriptionStatus.CANCELLED)!=1) throw new BizException(43002,"仅未支付处方可以作废"); }
 }

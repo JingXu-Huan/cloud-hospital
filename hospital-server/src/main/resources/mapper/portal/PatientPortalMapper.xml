@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.cloudhospital.portal.PatientPortalMapper">
+  <select id="findEnabledDoctors" resultType="map">SELECT id, doctor_no AS doctorNo, real_name AS realName, department_name AS departmentName, title FROM doctor WHERE enabled = b'1' ORDER BY department_name, real_name</select>
+  <select id="countQueueAhead" resultType="long">SELECT COUNT(*) FROM registration WHERE doctor_id = #{doctorId} AND visit_date = #{visitDate} AND status IN ('WAITING', 'IN_PROGRESS')</select>
+  <select id="findPatientOverview" resultType="map">SELECT id, patient_no AS patientNo, name, gender, phone FROM patient WHERE id = #{patientId}</select>
+  <select id="findRegistrationsByPatientId" resultType="map">SELECT r.id, r.visit_no AS visitNo, r.visit_date AS visitDate, r.status, d.real_name AS doctorName, d.department_name AS departmentName, CASE WHEN r.status = 'WAITING' THEN (SELECT COUNT(*) FROM registration q WHERE q.doctor_id = r.doctor_id AND q.visit_date = r.visit_date AND q.status IN ('WAITING', 'IN_PROGRESS') AND (q.registered_at &lt; r.registered_at OR (q.registered_at = r.registered_at AND q.id &lt; r.id))) ELSE 0 END AS queueAhead FROM registration r JOIN doctor d ON d.id = r.doctor_id WHERE r.patient_id = #{patientId} ORDER BY r.registered_at DESC</select>
+  <select id="findPrescriptionsByPatientId" resultType="map">SELECT id, prescription_no AS prescriptionNo, status, total_amount AS totalAmount FROM prescription WHERE patient_id = #{patientId} ORDER BY prescribed_at DESC</select>
+  <select id="findNotificationsByPatientId" resultType="map">SELECT id, type, title, content, created_at AS createdAt, read_at AS readAt FROM patient_notification WHERE patient_id = #{patientId} ORDER BY created_at DESC</select>
+  <update id="markNotificationsReadByPatientId">UPDATE patient_notification SET read_at = COALESCE(read_at, NOW()) WHERE patient_id = #{patientId}</update>
+</mapper>
