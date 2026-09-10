@@ -1,9 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd"[]>
 <mapper namespace="com.example.cloudhospital.patient.PatientRepository">
   <sql id="columns">id, patient_no, id_card, name, gender, birthday, phone, address, created_at, updated_at</sql>
-  <select id="findById" resultType="com.example.cloudhospital.patient.Patient">SELECT <include refid="columns"/> FROM patient WHERE id = #{id}</select>
-  <select id="findByIdCard" resultType="com.example.cloudhospital.patient.Patient">SELECT <include refid="columns"/> FROM patient WHERE id_card = #{idCard}</select>
-  <select id="findTop20ByNameContainingOrPatientNoContainingOrderByCreatedAtDesc" resultType="com.example.cloudhospital.patient.Patient">SELECT <include refid="columns"/> FROM patient WHERE name LIKE CONCAT('%', #{name}, '%') OR patient_no LIKE CONCAT('%', #{patientNo}, '%') ORDER BY created_at DESC LIMIT 20</select>
+  <select id="findById" resultType="com.example.cloudhospital.patient.Patient">SELECT <include refid="columns" /> FROM patient WHERE id = #{id}</select>
+  <select id="findByIdCard" resultType="com.example.cloudhospital.patient.Patient">SELECT <include refid="columns" /> FROM patient WHERE id_card = #{idCard}</select>
+  <select id="findTop20ByNameContainingOrPatientNoContainingOrderByCreatedAtDesc" resultType="com.example.cloudhospital.patient.Patient">SELECT <include refid="columns" /> FROM patient WHERE name LIKE CONCAT('%', #{name}, '%') OR patient_no LIKE CONCAT('%', #{patientNo}, '%') ORDER BY created_at DESC LIMIT 20</select>
+  <select id="existsRegistrationByPatientId" resultType="boolean">SELECT EXISTS(SELECT 1 FROM registration WHERE patient_id = #{patientId})</select>
   <insert id="save" parameterType="com.example.cloudhospital.patient.Patient" useGeneratedKeys="true" keyProperty="id">INSERT INTO patient (patient_no, id_card, name, gender, birthday, phone, address) VALUES (#{patientNo}, #{idCard}, #{name}, #{gender}, #{birthday}, #{phone}, #{address})</insert>
+  <delete id="deleteById">DELETE FROM patient WHERE id = #{id}</delete>
 </mapper>

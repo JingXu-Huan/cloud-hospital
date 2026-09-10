@@ -1,15 +1,270 @@
 <script setup>
-import { ref } from 'vue'
-import { Box, Calendar, House, Monitor, SwitchButton, Tickets, UserFilled, Wallet } from '@element-plus/icons-vue'
-import RegistrationDesk from './views/RegistrationDesk.vue'
-import DoctorDesk from './views/DoctorDesk.vue'
-import CashierDesk from './views/CashierDesk.vue'
-import PharmacyDesk from './views/PharmacyDesk.vue'
-import Dashboard from './views/Dashboard.vue'
-import PatientPortal from './views/PatientPortal.vue'
-import AuthGateway from './views/AuthGateway.vue'
-const session=ref(JSON.parse(localStorage.getItem('cloud-hospital-session')||'null')), active=ref('dashboard')
-const signOut=()=>{localStorage.removeItem('cloud-hospital-token');localStorage.removeItem('cloud-hospital-session');session.value=null}
+import {ref} from "vue";
+import {Box, Calendar, House, Monitor, SwitchButton, Tickets, UserFilled, Wallet,} from "@element-plus/icons-vue";
+import RegistrationDesk from "./views/RegistrationDesk.vue";
+import DoctorDesk from "./views/DoctorDesk.vue";
+import CashierDesk from "./views/CashierDesk.vue";
+import PharmacyDesk from "./views/PharmacyDesk.vue";
+import Dashboard from "./views/Dashboard.vue";
+import PatientPortal from "./views/PatientPortal.vue";
+import AuthGateway from "./views/AuthGateway.vue";
+
+const session = ref(
+    JSON.parse(localStorage.getItem("cloud-hospital-session") || "null"),
+  ),
+  active = ref("dashboard");
+const signOut = () => {
+  localStorage.removeItem("cloud-hospital-token");
+  localStorage.removeItem("cloud-hospital-session");
+  session.value = null;
+};
 </script>
-<template><AuthGateway v-if="!session" @signed-in="s=>session=s"/><el-container v-else-if="session.role==='ADMIN'" class="shell"><el-aside class="sidebar" width="236px"><div class="brand"><span class="brand-mark"><el-icon><Monitor/></el-icon></span><div>云医院<small>院内业务管理</small></div></div><el-menu :default-active="active" @select="active=$event"><el-menu-item index="dashboard"><el-icon><House/></el-icon><span>运营总览</span></el-menu-item><el-menu-item index="registration"><el-icon><Tickets/></el-icon><span>前台挂号</span></el-menu-item><el-menu-item index="doctor"><el-icon><UserFilled/></el-icon><span>医生工作站</span></el-menu-item><el-menu-item index="cashier"><el-icon><Wallet/></el-icon><span>收费窗口</span></el-menu-item><el-menu-item index="pharmacy"><el-icon><Box/></el-icon><span>药房发药</span></el-menu-item></el-menu></el-aside><el-container><el-header class="topbar"><div><p>院内工作台</p><strong>{{({dashboard:'运营总览',registration:'前台挂号',doctor:'医生工作站',cashier:'收费窗口',pharmacy:'药房发药'})[active]}}</strong></div><div class="account"><span class="avatar"><el-icon><UserFilled/></el-icon></span><small>{{session.username}}</small><el-button circle text aria-label="退出登录" @click="signOut"><el-icon><SwitchButton/></el-icon></el-button></div></el-header><el-main class="app-main"><Dashboard v-if="active==='dashboard'"/><RegistrationDesk v-else-if="active==='registration'"/><DoctorDesk v-else-if="active==='doctor'"/><CashierDesk v-else-if="active==='cashier'"/><PharmacyDesk v-else/></el-main></el-container></el-container><el-container v-else-if="session.role==='DOCTOR'" class="patient-shell"><el-header class="patient-top"><div class="patient-brand"><el-icon><Monitor/></el-icon><b>云医院</b><span>医生工作站</span></div><div class="account"><span class="avatar"><el-icon><UserFilled/></el-icon></span><small>{{session.doctorName || session.username}}</small><el-button circle text aria-label="退出登录" @click="signOut"><el-icon><SwitchButton/></el-icon></el-button></div></el-header><el-main class="app-main"><DoctorDesk :doctor-mode="true" :session="session"/></el-main></el-container><el-container v-else class="patient-shell"><el-header class="patient-top"><div class="patient-brand"><el-icon><Calendar/></el-icon><b>云医院</b><span>患者服务</span></div><div class="account"><span class="avatar"><el-icon><UserFilled/></el-icon></span><small>{{session.username}}</small><el-button circle text aria-label="退出登录" @click="signOut"><el-icon><SwitchButton/></el-icon></el-button></div></el-header><el-main><PatientPortal/></el-main></el-container></template>
-<style scoped>.shell,.patient-shell{min-height:100vh}.sidebar{background:#102f55;color:#fff;padding:24px 12px}.brand{display:flex;align-items:center;gap:11px;padding:0 12px 30px;font-size:20px;font-weight:750;letter-spacing:-.02em}.brand small{display:block;margin-top:4px;color:#9fb8d0;font-size:12px;font-weight:400;letter-spacing:0}.brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:#21a68a;color:#fff}.sidebar :deep(.el-menu){border:0;background:transparent}.sidebar :deep(.el-menu-item){height:46px;line-height:46px;color:#aac0d6;border-radius:10px;margin:4px 0;font-weight:500}.sidebar :deep(.el-menu-item .el-icon){font-size:18px;color:inherit}.sidebar :deep(.el-menu-item:hover),.sidebar :deep(.el-menu-item.is-active){background:#1c4976;color:#fff}.topbar,.patient-top{height:76px;background:rgba(255,255,255,.94);border-bottom:1px solid #e4edf4;display:flex;align-items:center;justify-content:space-between;padding:0 34px;color:#15395f}.topbar p{margin:0 0 3px;font-size:12px;font-weight:500;color:#8297ac}.topbar strong{font-size:20px;letter-spacing:-.02em}.account{display:flex;align-items:center;gap:9px}.account small{font-size:13px;color:#60778f}.avatar{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#e5f4f1;color:#16806c}.account :deep(.el-button){color:#58718a}.app-main{max-width:1440px;width:100%;margin:0 auto;padding:32px 36px}.patient-shell .el-main{padding:34px;background:#f3f7fa}.patient-brand{display:flex;align-items:center;gap:9px;color:#15395f}.patient-brand .el-icon{color:#15947d;font-size:21px}.patient-brand b{font-size:20px;letter-spacing:-.02em}.patient-brand span{padding-left:9px;border-left:1px solid #d8e4ed;font-size:13px;color:#71869b}@media(max-width:700px){.sidebar{width:62px!important;padding:18px 6px}.brand{padding:0 8px 20px}.brand>div{display:none}.sidebar :deep(.el-menu-item){padding:0 15px}.sidebar :deep(.el-menu-item span){display:none}.topbar,.patient-top{padding:0 18px}.topbar p{display:none}.topbar strong{font-size:18px}.account small,.patient-brand span{display:none}.app-main,.patient-shell .el-main{padding:20px 16px}}</style>
+<template>
+  <AuthGateway v-if="!session" @signed-in="(s) => (session = s)" /><el-container
+    v-else-if="session.role === 'ADMIN'"
+    class="shell"
+    ><el-aside class="sidebar" width="236px"
+      ><div class="brand">
+        <span class="brand-mark"
+          ><el-icon><Monitor /></el-icon
+        ></span>
+        <div>云医院<small>院内业务管理</small></div>
+      </div>
+      <el-menu :default-active="active" @select="active = $event"
+        ><el-menu-item index="dashboard"
+          ><el-icon><House /></el-icon><span>运营总览</span></el-menu-item
+        ><el-menu-item index="registration"
+          ><el-icon><Tickets /></el-icon><span>前台挂号</span></el-menu-item
+        ><el-menu-item index="doctor"
+          ><el-icon><UserFilled /></el-icon
+          ><span>医生工作站</span></el-menu-item
+        ><el-menu-item index="cashier"
+          ><el-icon><Wallet /></el-icon><span>收费窗口</span></el-menu-item
+        ><el-menu-item index="pharmacy"
+          ><el-icon><Box /></el-icon><span>药房发药</span></el-menu-item
+        ></el-menu
+      ></el-aside
+    ><el-container
+      ><el-header class="topbar"
+        ><div>
+          <p>院内工作台</p>
+          <strong>{{
+            {
+              dashboard: "运营总览",
+              registration: "前台挂号",
+              doctor: "医生工作站",
+              cashier: "收费窗口",
+              pharmacy: "药房发药",
+            }[active]
+          }}</strong>
+        </div>
+        <div class="account">
+          <span class="avatar"
+            ><el-icon><UserFilled /></el-icon></span
+          ><small>{{ session.username }}</small
+          ><el-button circle text aria-label="退出登录" @click="signOut"
+            ><el-icon><SwitchButton /></el-icon
+          ></el-button></div></el-header
+      ><el-main class="app-main"
+        ><Dashboard v-if="active === 'dashboard'" /><RegistrationDesk
+          v-else-if="active === 'registration'" /><DoctorDesk
+          v-else-if="active === 'doctor'" /><CashierDesk
+          v-else-if="active === 'cashier'" /><PharmacyDesk
+          v-else /></el-main></el-container></el-container
+  ><el-container v-else-if="session.role === 'DOCTOR'" class="patient-shell"
+    ><el-header class="patient-top"
+      ><div class="patient-brand">
+        <el-icon><Monitor /></el-icon><b>云医院</b><span>医生工作站</span>
+      </div>
+      <div class="account">
+        <span class="avatar"
+          ><el-icon><UserFilled /></el-icon></span
+        ><small>{{ session.doctorName || session.username }}</small
+        ><el-button circle text aria-label="退出登录" @click="signOut"
+          ><el-icon><SwitchButton /></el-icon
+        ></el-button></div></el-header
+    ><el-main class="app-main"
+      ><DoctorDesk
+        :doctor-mode="true"
+        :session="session" /></el-main></el-container
+  ><el-container v-else class="patient-shell"
+    ><el-header class="patient-top"
+      ><div class="patient-brand">
+        <el-icon><Calendar /></el-icon><b>云医院</b><span>患者服务</span>
+      </div>
+      <div class="account">
+        <span class="avatar"
+          ><el-icon><UserFilled /></el-icon></span
+        ><small>{{ session.username }}</small
+        ><el-button circle text aria-label="退出登录" @click="signOut"
+          ><el-icon><SwitchButton /></el-icon
+        ></el-button></div></el-header
+    ><el-main><PatientPortal /></el-main
+  ></el-container>
+</template>
+<style scoped>
+.shell,
+.patient-shell {
+  min-height: 100vh;
+}
+.sidebar {
+  background: #102f55;
+  color: #fff;
+  padding: 24px 12px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 12px 30px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+.brand small {
+  display: block;
+  margin-top: 4px;
+  color: #9fb8d0;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: #21a68a;
+  color: #fff;
+}
+.sidebar :deep(.el-menu) {
+  border: 0;
+  background: transparent;
+}
+.sidebar :deep(.el-menu-item) {
+  height: 46px;
+  line-height: 46px;
+  color: #aac0d6;
+  border-radius: 10px;
+  margin: 4px 0;
+  font-weight: 500;
+}
+.sidebar :deep(.el-menu-item .el-icon) {
+  font-size: 18px;
+  color: inherit;
+}
+.sidebar :deep(.el-menu-item:hover),
+.sidebar :deep(.el-menu-item.is-active) {
+  background: #1c4976;
+  color: #fff;
+}
+.topbar,
+.patient-top {
+  height: 76px;
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid #e4edf4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 34px;
+  color: #15395f;
+}
+.topbar p {
+  margin: 0 0 3px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #8297ac;
+}
+.topbar strong {
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+.account {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.account small {
+  font-size: 13px;
+  color: #60778f;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e5f4f1;
+  color: #16806c;
+}
+.account :deep(.el-button) {
+  color: #58718a;
+}
+.app-main {
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 36px;
+}
+.patient-shell .el-main {
+  padding: 34px;
+  background: #f3f7fa;
+}
+.patient-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #15395f;
+}
+.patient-brand .el-icon {
+  color: #15947d;
+  font-size: 21px;
+}
+.patient-brand b {
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+.patient-brand span {
+  padding-left: 9px;
+  border-left: 1px solid #d8e4ed;
+  font-size: 13px;
+  color: #71869b;
+}
+@media (max-width: 700px) {
+  .sidebar {
+    width: 62px !important;
+    padding: 18px 6px;
+  }
+  .brand {
+    padding: 0 8px 20px;
+  }
+  .brand > div {
+    display: none;
+  }
+  .sidebar :deep(.el-menu-item) {
+    padding: 0 15px;
+  }
+  .sidebar :deep(.el-menu-item span) {
+    display: none;
+  }
+  .topbar,
+  .patient-top {
+    padding: 0 18px;
+  }
+  .topbar p {
+    display: none;
+  }
+  .topbar strong {
+    font-size: 18px;
+  }
+  .account small,
+  .patient-brand span {
+    display: none;
+  }
+  .app-main,
+  .patient-shell .el-main {
+    padding: 20px 16px;
+  }
+}
+</style>

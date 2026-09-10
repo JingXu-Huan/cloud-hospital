@@ -1,30 +1,244 @@
 CREATE DATABASE IF NOT EXISTS cloud_hospital DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
 USE cloud_hospital;
 
 DROP TABLE IF EXISTS prescription_item;
+
 DROP TABLE IF EXISTS patient_notification;
+
 DROP TABLE IF EXISTS user_account;
+
 DROP TABLE IF EXISTS prescription;
+
 DROP TABLE IF EXISTS medical_record;
+
 DROP TABLE IF EXISTS registration;
+
 DROP TABLE IF EXISTS doctor;
+
 DROP TABLE IF EXISTS patient;
 
-CREATE TABLE patient (id BIGINT PRIMARY KEY AUTO_INCREMENT, patient_no VARCHAR(32) NOT NULL UNIQUE, id_card VARCHAR(32) NOT NULL UNIQUE, name VARCHAR(64) NOT NULL, gender VARCHAR(16) NOT NULL, birthday DATE NULL, phone VARCHAR(32), address VARCHAR(255), created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB;
-CREATE TABLE user_account (id BIGINT PRIMARY KEY AUTO_INCREMENT, username VARCHAR(64) NOT NULL UNIQUE, password_hash CHAR(64) NOT NULL, role VARCHAR(16) NOT NULL, patient_id BIGINT NULL UNIQUE, auth_token CHAR(36) NULL UNIQUE, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT fk_account_patient FOREIGN KEY (patient_id) REFERENCES patient(id), INDEX idx_account_token (auth_token)) ENGINE=InnoDB;
-CREATE TABLE doctor (id BIGINT PRIMARY KEY AUTO_INCREMENT, doctor_no VARCHAR(32) NOT NULL UNIQUE, login_name VARCHAR(64) NOT NULL UNIQUE, password_hash VARCHAR(255) NOT NULL, real_name VARCHAR(64) NOT NULL, department_name VARCHAR(64) NOT NULL, title VARCHAR(64), enabled BIT NOT NULL DEFAULT b'1', created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_doctor_department (department_name, enabled)) ENGINE=InnoDB;
-CREATE TABLE registration (id BIGINT PRIMARY KEY AUTO_INCREMENT, visit_no VARCHAR(32) NOT NULL UNIQUE, patient_id BIGINT NOT NULL, doctor_id BIGINT NOT NULL, visit_date DATE NOT NULL, registration_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00, status VARCHAR(32) NOT NULL, registered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, consultation_started_at DATETIME, consultation_ended_at DATETIME, cancel_reason VARCHAR(255), CONSTRAINT fk_registration_patient FOREIGN KEY (patient_id) REFERENCES patient(id), CONSTRAINT fk_registration_doctor FOREIGN KEY (doctor_id) REFERENCES doctor(id), INDEX idx_reg_doctor_date_status (doctor_id, visit_date, status), INDEX idx_reg_patient_date (patient_id, visit_date)) ENGINE=InnoDB;
-CREATE TABLE medical_record (id BIGINT PRIMARY KEY AUTO_INCREMENT, registration_id BIGINT NOT NULL UNIQUE, patient_id BIGINT NOT NULL, doctor_id BIGINT NOT NULL, chief_complaint VARCHAR(500), present_illness TEXT, past_history TEXT, allergy_history TEXT, physical_exam TEXT, diagnosis VARCHAR(500) NOT NULL, advice TEXT, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT fk_record_registration FOREIGN KEY (registration_id) REFERENCES registration(id), CONSTRAINT fk_record_patient FOREIGN KEY (patient_id) REFERENCES patient(id), CONSTRAINT fk_record_doctor FOREIGN KEY (doctor_id) REFERENCES doctor(id)) ENGINE=InnoDB;
-CREATE TABLE prescription (id BIGINT PRIMARY KEY AUTO_INCREMENT, prescription_no VARCHAR(32) NOT NULL UNIQUE, registration_id BIGINT NOT NULL, patient_id BIGINT NOT NULL, doctor_id BIGINT NOT NULL, status VARCHAR(32) NOT NULL, total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00, payment_method VARCHAR(32), prescribed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, paid_at DATETIME, dispensed_at DATETIME, picked_up_at DATETIME, remark VARCHAR(500), CONSTRAINT fk_rx_registration FOREIGN KEY (registration_id) REFERENCES registration(id), CONSTRAINT fk_rx_patient FOREIGN KEY (patient_id) REFERENCES patient(id), CONSTRAINT fk_rx_doctor FOREIGN KEY (doctor_id) REFERENCES doctor(id), INDEX idx_rx_registration (registration_id), INDEX idx_rx_status (status)) ENGINE=InnoDB;
-CREATE TABLE prescription_item (id BIGINT PRIMARY KEY AUTO_INCREMENT, prescription_id BIGINT NOT NULL, drug_code VARCHAR(32), drug_name VARCHAR(128) NOT NULL, specification VARCHAR(128), unit VARCHAR(32) NOT NULL, unit_price DECIMAL(10,2) NOT NULL, quantity INT NOT NULL, item_amount DECIMAL(10,2) NOT NULL, dosage VARCHAR(64), frequency VARCHAR(64), route VARCHAR(64), CONSTRAINT fk_rx_item_rx FOREIGN KEY (prescription_id) REFERENCES prescription(id), INDEX idx_rx_item_rx (prescription_id), CONSTRAINT chk_rx_item_quantity CHECK (quantity > 0), CONSTRAINT chk_rx_item_price CHECK (unit_price >= 0)) ENGINE=InnoDB;
-CREATE TABLE patient_notification (id BIGINT PRIMARY KEY AUTO_INCREMENT, patient_id BIGINT NOT NULL, prescription_id BIGINT NULL, type VARCHAR(32) NOT NULL, title VARCHAR(100) NOT NULL, content VARCHAR(500) NOT NULL, read_at DATETIME NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT fk_notification_patient FOREIGN KEY (patient_id) REFERENCES patient(id), CONSTRAINT fk_notification_prescription FOREIGN KEY (prescription_id) REFERENCES prescription(id), INDEX idx_notification_patient_created (patient_id, created_at)) ENGINE=InnoDB;
+CREATE TABLE patient (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  patient_no VARCHAR(32) NOT NULL UNIQUE,
+  id_card VARCHAR(32) NOT NULL UNIQUE,
+  name VARCHAR(64) NOT NULL,
+  gender VARCHAR(16) NOT NULL,
+  birthday DATE NULL,
+  phone VARCHAR(32),
+  address VARCHAR(255),
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
 
-INSERT INTO patient (patient_no,id_card,name,gender,birthday,phone,address) VALUES
-('P202609080001','410101200408101234',CONVERT(0xE78E8BE5B08FE6988E USING utf8mb4),'MALE','2004-08-10','13800000001',CONVERT(0xE6B2B3E58D97E79C81E98391E5B79EE5B882 USING utf8mb4)),
-('P202609080002','410101200503152345',CONVERT(0xE69D8EE69993E99BA8 USING utf8mb4),'FEMALE','2005-03-15','13800000002',CONVERT(0xE6B2B3E58D97E79C81E4BFA1E998B3E5B882 USING utf8mb4));
-INSERT INTO user_account (username,password_hash,role) VALUES ('admin',SHA2('admin123',256),'ADMIN');
-INSERT INTO doctor (doctor_no,login_name,password_hash,real_name,department_name,title,enabled) VALUES
-('D001','zhangwei','{noop}123456',CONVERT(0xE5BCA0E4BC9F USING utf8mb4),CONVERT(0xE58685E7A791 USING utf8mb4),CONVERT(0xE4B8BBE6B2BBE58CBBE5B888 USING utf8mb4),1),
-('D002','lihua','{noop}123456',CONVERT(0xE69D8EE58D8E USING utf8mb4),CONVERT(0xE5A496E7A791 USING utf8mb4),CONVERT(0xE589AFE4B8BBE4BBBBE58CBBE5B888 USING utf8mb4),1);
-INSERT INTO user_account (username,password_hash,role) VALUES ('zhangwei',SHA2('123456',256),'DOCTOR'),('lihua',SHA2('123456',256),'DOCTOR');
-INSERT INTO registration (visit_no,patient_id,doctor_id,visit_date,registration_fee,status,registered_at) VALUES ('V202609080001',1,1,CURDATE(),8.00,'WAITING',NOW());
+CREATE TABLE user_account (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(64) NOT NULL UNIQUE,
+  password_hash CHAR(64) NOT NULL,
+  role VARCHAR(16) NOT NULL,
+  patient_id BIGINT NULL UNIQUE,
+  auth_token CHAR(36) NULL UNIQUE,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_account_patient FOREIGN KEY (patient_id) REFERENCES patient (id),
+  INDEX idx_account_token (auth_token)
+) ENGINE = InnoDB;
+
+CREATE TABLE doctor (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  doctor_no VARCHAR(32) NOT NULL UNIQUE,
+  login_name VARCHAR(64) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  real_name VARCHAR(64) NOT NULL,
+  department_name VARCHAR(64) NOT NULL,
+  title VARCHAR(64),
+  enabled BIT NOT NULL DEFAULT b'1',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_doctor_department (department_name, enabled)
+) ENGINE = InnoDB;
+
+CREATE TABLE registration (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  visit_no VARCHAR(32) NOT NULL UNIQUE,
+  patient_id BIGINT NOT NULL,
+  doctor_id BIGINT NOT NULL,
+  visit_date DATE NOT NULL,
+  registration_fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  status VARCHAR(32) NOT NULL,
+  registered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  consultation_started_at DATETIME,
+  consultation_ended_at DATETIME,
+  cancel_reason VARCHAR(255),
+  CONSTRAINT fk_registration_patient FOREIGN KEY (patient_id) REFERENCES patient (id),
+  CONSTRAINT fk_registration_doctor FOREIGN KEY (doctor_id) REFERENCES doctor (id),
+  INDEX idx_reg_doctor_date_status (doctor_id, visit_date, status),
+  INDEX idx_reg_patient_date (patient_id, visit_date)
+) ENGINE = InnoDB;
+
+CREATE TABLE medical_record (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  registration_id BIGINT NOT NULL UNIQUE,
+  patient_id BIGINT NOT NULL,
+  doctor_id BIGINT NOT NULL,
+  chief_complaint VARCHAR(500),
+  present_illness TEXT,
+  past_history TEXT,
+  allergy_history TEXT,
+  physical_exam TEXT,
+  diagnosis VARCHAR(500) NOT NULL,
+  advice TEXT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_record_registration FOREIGN KEY (registration_id) REFERENCES registration (id),
+  CONSTRAINT fk_record_patient FOREIGN KEY (patient_id) REFERENCES patient (id),
+  CONSTRAINT fk_record_doctor FOREIGN KEY (doctor_id) REFERENCES doctor (id)
+) ENGINE = InnoDB;
+
+CREATE TABLE prescription (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  prescription_no VARCHAR(32) NOT NULL UNIQUE,
+  registration_id BIGINT NOT NULL,
+  patient_id BIGINT NOT NULL,
+  doctor_id BIGINT NOT NULL,
+  status VARCHAR(32) NOT NULL,
+  total_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  payment_method VARCHAR(32),
+  prescribed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  paid_at DATETIME,
+  dispensed_at DATETIME,
+  picked_up_at DATETIME,
+  remark VARCHAR(500),
+  CONSTRAINT fk_rx_registration FOREIGN KEY (registration_id) REFERENCES registration (id),
+  CONSTRAINT fk_rx_patient FOREIGN KEY (patient_id) REFERENCES patient (id),
+  CONSTRAINT fk_rx_doctor FOREIGN KEY (doctor_id) REFERENCES doctor (id),
+  INDEX idx_rx_registration (registration_id),
+  INDEX idx_rx_status (status)
+) ENGINE = InnoDB;
+
+CREATE TABLE prescription_item (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  prescription_id BIGINT NOT NULL,
+  drug_code VARCHAR(32),
+  drug_name VARCHAR(128) NOT NULL,
+  specification VARCHAR(128),
+  unit VARCHAR(32) NOT NULL,
+  unit_price DECIMAL(10, 2) NOT NULL,
+  quantity INT NOT NULL,
+  item_amount DECIMAL(10, 2) NOT NULL,
+  dosage VARCHAR(64),
+  frequency VARCHAR(64),
+  route VARCHAR(64),
+  CONSTRAINT fk_rx_item_rx FOREIGN KEY (prescription_id) REFERENCES prescription (id),
+  INDEX idx_rx_item_rx (prescription_id),
+  CONSTRAINT chk_rx_item_quantity CHECK (quantity > 0),
+  CONSTRAINT chk_rx_item_price CHECK (unit_price >= 0)
+) ENGINE = InnoDB;
+
+CREATE TABLE patient_notification (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  patient_id BIGINT NOT NULL,
+  prescription_id BIGINT NULL,
+  type VARCHAR(32) NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  content VARCHAR(500) NOT NULL,
+  read_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_notification_patient FOREIGN KEY (patient_id) REFERENCES patient (id),
+  CONSTRAINT fk_notification_prescription FOREIGN KEY (prescription_id) REFERENCES prescription (id),
+  INDEX idx_notification_patient_created (patient_id, created_at)
+) ENGINE = InnoDB;
+
+INSERT INTO
+  patient (
+    patient_no,
+    id_card,
+    name,
+    gender,
+    birthday,
+    phone,
+    address
+  )
+VALUES
+  (
+    'P202609080001',
+    '410101200408101234',
+    CONVERT(0xE78E8BE5B08FE6988E USING utf8mb4),
+    'MALE',
+    '2004-08-10',
+    '13800000001',
+    CONVERT(
+      0xE6B2B3E58D97E79C81E98391E5B79EE5B882 USING utf8mb4
+    )
+  ),
+  (
+    'P202609080002',
+    '410101200503152345',
+    CONVERT(0xE69D8EE69993E99BA8 USING utf8mb4),
+    'FEMALE',
+    '2005-03-15',
+    '13800000002',
+    CONVERT(
+      0xE6B2B3E58D97E79C81E4BFA1E998B3E5B882 USING utf8mb4
+    )
+  );
+
+INSERT INTO
+  user_account (username, password_hash, role)
+VALUES
+  ('admin', SHA2('admin123', 256), 'ADMIN');
+
+INSERT INTO
+  doctor (
+    doctor_no,
+    login_name,
+    password_hash,
+    real_name,
+    department_name,
+    title,
+    enabled
+  )
+VALUES
+  (
+    'D001',
+    'zhangwei',
+    '{noop}123456',
+    CONVERT(0xE5BCA0E4BC9F USING utf8mb4),
+    CONVERT(0xE58685E7A791 USING utf8mb4),
+    CONVERT(0xE4B8BBE6B2BBE58CBBE5B888 USING utf8mb4),
+    1
+  ),
+  (
+    'D002',
+    'lihua',
+    '{noop}123456',
+    CONVERT(0xE69D8EE58D8E USING utf8mb4),
+    CONVERT(0xE5A496E7A791 USING utf8mb4),
+    CONVERT(0xE589AFE4B8BBE4BBBBE58CBBE5B888 USING utf8mb4),
+    1
+  );
+
+INSERT INTO
+  user_account (username, password_hash, role)
+VALUES
+  ('zhangwei', SHA2('123456', 256), 'DOCTOR'),
+  ('lihua', SHA2('123456', 256), 'DOCTOR');
+
+INSERT INTO
+  registration (
+    visit_no,
+    patient_id,
+    doctor_id,
+    visit_date,
+    registration_fee,
+    status,
+    registered_at
+  )
+VALUES
+  (
+    'V202609080001',
+    1,
+    1,
+    CURDATE(),
+    8.00,
+    'WAITING',
+    NOW()
+  );

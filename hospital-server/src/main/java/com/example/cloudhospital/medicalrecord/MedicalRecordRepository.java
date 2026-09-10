@@ -1,8 +1,14 @@
 package com.example.cloudhospital.medicalrecord;
-import java.util.Optional;
+
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.Optional;
+
 @Mapper
 public interface MedicalRecordRepository {
-    Optional<MedicalRecord> findByRegistrationId(Long registrationId);
-    int save(MedicalRecord record);
+  Optional<MedicalRecord> findByRegistrationId(Long registrationId);
+
+  int save(MedicalRecord record);
+
+  int deleteByRegistrationId(Long registrationId);
 }
